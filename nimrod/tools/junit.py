@@ -20,7 +20,7 @@ JUnitResult = namedtuple('JUnitResult', ['ok_tests', 'ok_tests_error', 'ok_tests
 
 
 def is_failed_caused_by_compilation_problem(test_case_name, failed_test_message):
-    my_regex = re.escape(test_case_name) + r"[0-9A-Za-z0-9_\(\.\)\n \:]+(NoSuchMethodError|NoSuchFieldError|NoSuchClassError|NoSuchAttributeError|tried to access method)"
+    my_regex = re.escape(test_case_name) + r"[0-9A-Za-z0-9_\(\.\)\n \:]+(NoSuchMethodError|NoSuchFieldError|NoSuchClassError|NoSuchAttributeError|tried to access method|No runnable methods)"
     matches = re.findall(my_regex, failed_test_message)
     if (len(matches) > 0):
         return True
@@ -53,7 +53,7 @@ class JUnit:
                           timeout)
 
     def exec_with_mutant(self, suite_dir, suite_classes_dir, sut_class,
-                         test_class, mutant_dir, timeout=TIMEOUT):
+                         test_class, mutant_dir, timeout=TIMEOUT, run_with_coverage=True):
         classpath = generate_classpath([
             JMOCKIT, JUNIT, HAMCREST, EVOSUITE_RUNTIME,
             suite_classes_dir,
@@ -62,19 +62,25 @@ class JUnit:
         ])
 
         return self._exec(suite_dir, sut_class, test_class, classpath,
-                          mutant_dir, timeout)
+                          mutant_dir, timeout, run_with_coverage=run_with_coverage)
 
     def _exec(self, suite_dir, sut_class, test_class, classpath,
-              cov_src_dirs='.', timeout=TIMEOUT):
+              cov_src_dirs='.', timeout=TIMEOUT, run_with_coverage=True):
 
         params = (
             '-classpath', classpath,
-            '-Dcoverage-classes=' + sut_class,
-            '-Dcoverage-output=html',
-            '-Dcoverage-metrics=line',
-            '-Dcoverage-srcDirs=' + cov_src_dirs,
             'org.junit.runner.JUnitCore', test_class
         )
+
+        if run_with_coverage:
+            params = (
+                '-classpath', classpath,
+                '-Dcoverage-classes=' + sut_class,
+                '-Dcoverage-output=html',
+                '-Dcoverage-metrics=line',
+                '-Dcoverage-srcDirs=' + cov_src_dirs,
+                'org.junit.runner.JUnitCore', test_class
+            )
 
         start = time.time()
         try:
@@ -160,7 +166,7 @@ class JUnit:
         return tests_fail, tests_not_executed, executed_tests, tests_fail_with_files, tests_not_executed_with_files
 
     def run_with_mutant(self, suite, sut_class, mutant_dir, cov_original=True,
-                        original_dir=None):
+                        original_dir=None, run_with_coverage=True):
         executions_test = []
         ok_tests = set()
         ok_tests_number = 0
@@ -188,7 +194,7 @@ class JUnit:
             for test_class in suite.test_classes:
                 result = self.exec_with_mutant(suite.suite_dir,
                                                suite.suite_classes_dir, sut_class,
-                                               test_class, mutant_dir)
+                                               test_class, mutant_dir, run_with_coverage=run_with_coverage)
                 if (test_class == 'ErrorTest'):
                     ok_tests_error.update(result.ok_tests_error)
                     fail_tests_error += result.fail_tests

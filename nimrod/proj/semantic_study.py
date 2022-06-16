@@ -14,6 +14,7 @@ from nimrod.report.report_analysis import Report_Analysis
 from nimrod.report.result_summary import Result_Summary
 from nimrod.setup_tools.evosuite_diff_setup import Evosuite_Diff_setup
 from nimrod.setup_tools.evosuite_setup import Evosuite_setup
+from nimrod.setup_tools.project_setup import Project_setup
 from nimrod.setup_tools.randoop_modified_setup import Randoop_Modified_setup
 from nimrod.setup_tools.randoop_setup import Randoop_setup
 from nimrod.setup_tools.tools import Tools
@@ -30,6 +31,7 @@ class semantic_study:
         config = get_config()
         self.project_dep = Project_dependecies(config, path_local_project, path_local_module_analysis, project_name)
 
+        self.project_setup = Project_setup()
         self.evosuite_setup = Evosuite_setup()
         self.evosuite_diff_setup = Evosuite_Diff_setup()
         self.randoop_setup = Randoop_setup()
@@ -67,6 +69,9 @@ if __name__ == '__main__':
                 coverage_report = Coverage_Report()
                 merge = MergeScenario(merge_information=row)
                 for i in range(0, 1):
+                    #TODO: refact
+                    project = semantic_study_obj.project_setup.run_tool_for_semantic_conflict_detection(semantic_study_obj, merge, row[10], row[11], row[12], row[13], row[5], row[3], row[4], row[2], Tools.PROJECT.value)
+                    semantic_study_obj.output_semantic_conflict.write_output_line(row[0], project, row[6], row[7], row[14])
                     evosuite = semantic_study_obj.evosuite_setup.run_tool_for_semantic_conflict_detection(semantic_study_obj, merge, row[10], row[11], row[12], row[13], row[5], row[3], row[4], row[2], Tools.EVOSUITE.value)
                     semantic_study_obj.output_semantic_conflict.write_output_line(row[0], evosuite, row[6], row[7], row[14])
                     evosuite_diff = semantic_study_obj.evosuite_diff_setup.run_tool_for_semantic_conflict_detection(semantic_study_obj, merge, row[10], row[11], row[12], row[13], row[5], row[3], row[4], row[2], Tools.DIFF_EVOSUITE.value)

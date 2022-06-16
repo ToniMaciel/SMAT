@@ -1,6 +1,7 @@
 from enum import Enum
 
 class Tools(Enum):
+    PROJECT='PROJECT-TESTS'
     RANDOOP='RANDOOP'
     RANDOOP_MOD='RANDOOP-MODIFIED'
     EVOSUITE='EVOSUITE'

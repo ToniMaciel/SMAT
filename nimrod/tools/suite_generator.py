@@ -23,7 +23,7 @@ Suite = namedtuple('Suite', ['suite_name', 'suite_dir', 'suite_classes_dir',
 
 class SuiteGenerator(ABC):
 
-    def __init__(self, java, classpath, tests_src, sut_class, sut_classes=None, sut_method=None, params=None):
+    def __init__(self, java, classpath, tests_src, sut_class, sut_classes=None, sut_method=None, params=None, suite_dir=None, suite_classes_dir=None, suite_name=None):
         self.java = java
         self.tests_src = tests_src
         self.classpath = classpath
@@ -31,33 +31,34 @@ class SuiteGenerator(ABC):
         self.sut_classes = sut_classes
         self.sut_method = sut_method
         self.parameters = params if params else []
-        self.suite_dir = None
-        self.suite_classes_dir = None
-        self.suite_name = self._set_suite_name()
+        self.suite_dir = suite_dir
+        self.suite_classes_dir = suite_classes_dir
+        self.suite_name = self._set_suite_name() if suite_name is None else suite_name
 
     @abstractmethod
     def _exec_tool(self):
         pass
 
     def _compile(self):
-        self.suite_classes_dir = os.path.join(self.suite_dir, 'classes')
-        self._create_dirs(self.suite_classes_dir)
-
-        classpath = generate_classpath([self.classpath, self.suite_dir, JUNIT,
-                                        HAMCREST, self.suite_classes_dir]
-                                       + self._extra_classpath())
-
-        for java_file in self._get_java_files():
-            java_file = os.path.join(self.suite_dir, java_file)
-            try:
-                self.java.exec_javac(java_file, self._get_suite_dir(),
-                                     self.java.get_env(), COMPILE_TIMEOUT,
-                                     '-classpath', classpath,
-                                     '-d', self.suite_classes_dir)
-            except subprocess.CalledProcessError as e:
-                print('[ERROR] Compiling {0} tests: {1}'.format(
-                    self._get_tool_name(), e.output.decode('unicode_escape')),
-                    file=sys.stderr)
+        if self.suite_classes_dir is None:
+            self.suite_classes_dir = os.path.join(self.suite_dir, 'classes')
+            self._create_dirs(self.suite_classes_dir)
+    
+            classpath = generate_classpath([self.classpath, self.suite_dir, JUNIT,
+                                            HAMCREST, self.suite_classes_dir]
+                                           + self._extra_classpath())
+    
+            for java_file in self._get_java_files():
+                java_file = os.path.join(self.suite_dir, java_file)
+                try:
+                    self.java.exec_javac(java_file, self._get_suite_dir(),
+                                         self.java.get_env(), COMPILE_TIMEOUT,
+                                         '-classpath', classpath,
+                                         '-d', self.suite_classes_dir)
+                except subprocess.CalledProcessError as e:
+                    print('[ERROR] Compiling {0} tests: {1}'.format(
+                        self._get_tool_name(), e.output.decode('unicode_escape')),
+                        file=sys.stderr)
 
     def _get_java_files(self):
         return sorted(get_java_files(self.suite_dir))
