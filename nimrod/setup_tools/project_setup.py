@@ -1,3 +1,5 @@
+from os.path import exists
+
 from nimrod.setup_tools.setup_tool import Setup_tool
 from nimrod.tools.project import Project
 from nimrod.tools.junit import JUnit
@@ -41,7 +43,8 @@ class Project_setup(Setup_tool):
                                                            evo.project_dep.parentNotReg, evo.project_dep)
             test_result_merge = self.run_test_suite(path_suite.suite_classes_dir, evo.project_dep.sut_class,
                                                     evo.project_dep.mergeDir, evo.project_dep)
-        except:
+        except Exception as err:
+            print(err)
             print("Some project versions could not be evaluated")
             conflict_info.append(["NONE", set(), "NO-INFORMATION", commitBaseSha, commitParentTestSuite, commitMergeSha,
                                     tool])
@@ -54,6 +57,9 @@ class Project_setup(Setup_tool):
 
         classpath_list.append(scenario.merge_scenario.get_merge_hash()+"-TestFiles.jar")
         path_test_jar = "/".join(classpath_list)
+
+        if not exists(path_test_jar):
+            raise Exception("Jar with project tests not provided")
 
         project = Project(
             java=project_dep.java,
