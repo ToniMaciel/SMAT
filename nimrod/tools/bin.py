@@ -8,6 +8,8 @@ HAMCREST = os.sep.join([PATH, 'bin', 'hamcrest-core-1.3.jar'])
 EVOSUITE = os.sep.join([PATH, 'bin', 'evosuite-1.0.6.jar'])
 EVOSUITE_RUNTIME = os.sep.join([PATH, 'bin',
                                 'evosuite-standalone-runtime-1.0.6.jar'])
+EVOSUITE_REGEX = os.sep.join([PATH, 'bin', 'evosuite-regex-1.2.1.jar'])
+EVOSUITE_RUNTIME_REGEX = os.sep.join([PATH, 'bin', 'evosuite-regex-standalone-runtime-1.2.1.jar'])
 MOD_RANDOOP = os.sep.join([PATH, 'bin', 'modified-randoop-all-4.2.5.jar'])
 JMOCKIT = os.sep.join([PATH, 'bin', 'jmockit-1.40-marcio.1.jar'])
 RANDOOP = os.sep.join([PATH, 'bin', 'randoop-all-4.2.5.jar'])

@@ -17,6 +17,7 @@ from nimrod.test_suite_generation.generators.randoop_test_suite_generator import
 from nimrod.test_suite_generation.generators.evosuite_differential_test_suite_generator import EvosuiteDifferentialTestSuiteGenerator
 from nimrod.test_suite_generation.generators.evosuite_test_suite_generator import EvosuiteTestSuiteGenerator
 from nimrod.test_suite_generation.generators.project_test_suite_generator import ProjectTestSuiteGenerator
+from nimrod.test_suite_generation.generators.evosuite_regex_test_suite_generator import EvosuiteRegexTestSuiteGenerator
 from nimrod.test_suites_execution.main import TestSuitesExecution, TestSuiteExecutor
 from nimrod.tools.bin import MOD_RANDOOP, RANDOOP
 from nimrod.tools.java import Java
@@ -26,7 +27,7 @@ from nimrod.input_parsing.input_parser import CsvInputParser, JsonInputParser
 
 def get_test_suite_generators(config: Dict[str, str]) -> List[TestSuiteGenerator]:
   config_generators = config.get(
-      'test_suite_generators', ['randoop', 'randoop-modified', 'evosuite', 'evosuite-differential', 'project'])
+      'test_suite_generators', ['randoop', 'randoop-modified', 'evosuite', 'evosuite-differential', 'project', 'evosuite-regex', 'evosuite-regex-all'])
   generators: List[TestSuiteGenerator] = list()
 
   if 'randoop' in config_generators:
@@ -40,6 +41,10 @@ def get_test_suite_generators(config: Dict[str, str]) -> List[TestSuiteGenerator
     generators.append(EvosuiteDifferentialTestSuiteGenerator(Java()))
   if 'project' in config_generators:
     generators.append(ProjectTestSuiteGenerator(Java()))
+  if 'evosuite-regex' in config_generators:
+    generators.append(EvosuiteRegexTestSuiteGenerator(Java(), False))
+  if 'evosuite-regex-all' in config_generators:
+    generators.append(EvosuiteRegexTestSuiteGenerator(Java(), True))
 
   return generators
 
