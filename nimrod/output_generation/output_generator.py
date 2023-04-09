@@ -30,6 +30,6 @@ class OutputGenerator(ABC, Generic[T]):
         data = self._generate_report_data(context)
         logging.info(f"Finished data processing of {self._report_name} report")
 
-        with open(file_path, "w") as write:
+        with open(file_path, "a") as write:
             json.dump(data, write)
         logging.info(f"Finished generation of {self._report_name} report")
