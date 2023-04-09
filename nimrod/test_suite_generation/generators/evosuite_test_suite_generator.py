@@ -76,6 +76,8 @@ class EvosuiteTestSuiteGenerator(TestSuiteGenerator):
 
     def _convert_method_signature(self, meth_signature: str) -> str:
         method_return = ""
+        if "(" not in meth_signature:
+            return method_return
         try:
             method_return = meth_signature.split(")")[1]
         except Exception as e:

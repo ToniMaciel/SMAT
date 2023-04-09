@@ -72,4 +72,4 @@ class TestSuiteGenerator(ABC):
         for java_file in self._get_test_suite_class_paths(test_suite_path):
             self._java.exec_javac(java_file, test_suite_path, None, None,
                                   '-classpath', class_path, '-d', compiled_classes_path)
-        return class_path
+        return generate_classpath([compiled_classes_path] + extra_class_path)

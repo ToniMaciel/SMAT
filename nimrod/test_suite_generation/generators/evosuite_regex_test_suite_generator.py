@@ -55,15 +55,25 @@ class EvosuiteRegexTestSuiteGenerator(EvosuiteTestSuiteGenerator):
 
     # Evosuite needs to add its own Runtime in order to compile test suite
     def _compile_test_suite(self, input_jar: str, output_path: str, extra_class_path: List[str] = []) -> str:
-        return super()._compile_test_suite(input_jar, output_path, [EVOSUITE_RUNTIME_REGEX] + extra_class_path)
+        class_path_with_additional_runtime = super()._compile_test_suite(input_jar, output_path, [EVOSUITE_RUNTIME_REGEX] + extra_class_path)
+        return self._remove_superclass_evosuite_runtime(class_path_with_additional_runtime)
+    
+    def _remove_superclass_evosuite_runtime(self, input_string: str) -> str:
+        paths = input_string.split(':')
+        filtered_paths = [path for path in paths if "evosuite-standalone" not in path]
+        output_string = ":".join(filtered_paths)
+        return output_string
 
     def _create_method_regex(self, methods: "List[str]"):
         rectified_methods = [self._convert_method_signature(
             method) for method in methods]
         rectified_methods.append("deserializeObject.*")
+        rectified_methods.append("<init>.*")
         return ("|").join(rectified_methods)
 
     def _convert_method_signature(self, meth_signature: str) -> str:
+        if "(" not in meth_signature:
+            return ".*"
         meth_name = meth_signature[:meth_signature.rfind("(")]
         meth_args = meth_signature[meth_signature.find(
             "(") + 1:meth_signature.rfind(")")].split("|")
@@ -120,7 +130,7 @@ class EvosuiteRegexTestSuiteGenerator(EvosuiteTestSuiteGenerator):
         elif arg == 'String':
             result = result + 'Ljava/lang/String;'
         else:
-            temp = "L" + arg.replace('.', '/') + ';'
+            temp = "L.*" + arg.split('.')[-1] + ';'
             result = result + temp
 
         return re.escape(result)
