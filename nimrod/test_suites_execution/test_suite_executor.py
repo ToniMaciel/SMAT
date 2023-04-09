@@ -6,7 +6,7 @@ from typing import Dict, List
 from nimrod.test_suite_generation.test_suite import TestSuite
 from nimrod.test_suites_execution.test_case_result import TestCaseResult
 from nimrod.tests.utils import get_base_output_path
-from nimrod.tools.bin import EVOSUITE_RUNTIME, JACOCOAGENT, JUNIT, JUNIT_5
+from nimrod.tools.bin import EVOSUITE_RUNTIME, JACOCOAGENT, JUNIT, JUNIT_5, HAMCREST
 from nimrod.tools.java import TIMEOUT, Java
 from nimrod.tools.jacoco import Jacoco
 from nimrod.utils import generate_classpath
@@ -51,7 +51,7 @@ class TestSuiteExecutor:
         try:
             classpath = generate_classpath([
                 JUNIT,
-                EVOSUITE_RUNTIME,
+                HAMCREST,
                 target_jar,
                 test_suite.class_path
             ])
@@ -80,15 +80,15 @@ class TestSuiteExecutor:
             failed_tests = re.findall(r'(?P<test_case_name>test\d+)\([A-Za-z0-9_.]+\)', output)
             for failed_test in failed_tests:
                 results[failed_test] = get_result_for_test_case(failed_test, output)
-
             tests_run = re.search(r'Tests run: (?P<tests_run_count>\d+),', output)
             test_run_count = 0
             if tests_run:
                 test_run_count = int(tests_run.group('tests_run_count'))
-            for i in range(0, test_run_count):
-                test_case_name = 'test{number:0{width}d}'.format(width=len(str(test_run_count)), number=i)
-                if not results.get(test_case_name):
-                    results[test_case_name] = TestCaseResult.PASS
+                if results:
+                    for i in range(0, test_run_count):
+                        test_case_name = 'test{number:0{width}d}'.format(width=len(str(test_run_count)), number=i)
+                        if not results.get(test_case_name):
+                            results[test_case_name] = TestCaseResult.PASS
  
         return results
 
@@ -117,7 +117,7 @@ class TestSuiteExecutor:
         try:
             classpath = generate_classpath([
                 JUNIT_5,
-                EVOSUITE_RUNTIME,
+                HAMCREST,
                 JACOCOAGENT,
                 target_jar,
                 test_suite.class_path
