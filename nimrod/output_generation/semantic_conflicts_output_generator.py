@@ -71,8 +71,11 @@ class SemanticConflictsOutputGenerator(OutputGenerator[List[SemanticConflictsOut
         class_report_path = path.join(
             coverage_report_root, package_name, f"{class_name}.html")
 
-        method_name = method_signature[:method_signature.index("(") + 1]
-
+        if "(" in method_signature:
+            method_name = method_signature[:method_signature.index("(") + 1]
+        else:
+            method_name = method_signature
+            
         report_file = open(class_report_path)
         decoded_report = BeautifulSoup(report_file, 'html.parser')
         method_report_rows = decoded_report.select("#coveragetable > tbody > tr")

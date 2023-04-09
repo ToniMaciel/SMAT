@@ -55,7 +55,7 @@ class EvosuiteRegexTestSuiteGenerator(EvosuiteTestSuiteGenerator):
 
     # Evosuite needs to add its own Runtime in order to compile test suite
     def _compile_test_suite(self, input_jar: str, output_path: str, extra_class_path: List[str] = []) -> str:
-        class_path_with_additional_runtime = super()._compile_test_suite(input_jar, output_path, [EVOSUITE_RUNTIME_REGEX] + extra_class_path)
+        class_path_with_additional_runtime = super()._compile_test_suite(input_jar, output_path, extra_class_path + [EVOSUITE_RUNTIME_REGEX])
         return self._remove_superclass_evosuite_runtime(class_path_with_additional_runtime)
     
     def _remove_superclass_evosuite_runtime(self, input_string: str) -> str:
