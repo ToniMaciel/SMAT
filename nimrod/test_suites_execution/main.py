@@ -1,4 +1,4 @@
-import logging
+import logging, re
 from typing import Dict, List
 from nimrod.test_suite_generation.test_suite import TestSuite
 from nimrod.core.merge_scenario_under_analysis import ScenarioInformation as ScenarioJars
@@ -29,18 +29,23 @@ class TestSuitesExecution:
         return results
 
     def _merge_test_case_results(self, test_suite: TestSuite, results_base: Dict[str, TestCaseResult], results_left: Dict[str, TestCaseResult], results_right: Dict[str, TestCaseResult], results_merge: Dict[str, TestCaseResult]) -> List[TestCaseExecutionInMergeScenario]:
-        test_cases = results_base.keys()
+        test_cases = set(results_base.keys())
         test_suite_results: List[TestCaseExecutionInMergeScenario] = list()
+
+        # Randoop tests workaround
+        if 'RegressionTest' in test_cases:
+            for result in [results_left, results_merge, results_right]:
+                test_cases.update(result.keys())
 
         for test_case in test_cases:
             test_suite_results.append(
                 TestCaseExecutionInMergeScenario(
                     test_suite,
                     test_case,
-                    results_base.get(test_case, TestCaseResult.NOT_EXECUTABLE),
-                    results_left.get(test_case, TestCaseResult.NOT_EXECUTABLE),
-                    results_right.get(test_case, TestCaseResult.NOT_EXECUTABLE),
-                    results_merge.get(test_case, TestCaseResult.NOT_EXECUTABLE)
+                    results_base.get(test_case, results_base.get(re.compile(r'RegressionTest\d*').sub('RegressionTest', test_case),TestCaseResult.NOT_EXECUTABLE)),
+                    results_left.get(test_case, results_left.get(re.compile(r'RegressionTest\d*').sub('RegressionTest', test_case),TestCaseResult.NOT_EXECUTABLE)),
+                    results_right.get(test_case, results_right.get(re.compile(r'RegressionTest\d*').sub('RegressionTest', test_case),TestCaseResult.NOT_EXECUTABLE)),
+                    results_merge.get(test_case, results_merge.get(re.compile(r'RegressionTest\d*').sub('RegressionTest', test_case),TestCaseResult.NOT_EXECUTABLE))
                 )
             )
 

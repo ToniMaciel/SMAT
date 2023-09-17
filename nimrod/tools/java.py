@@ -4,6 +4,7 @@ import sys
 import subprocess
 
 from nimrod.utils import get_java_files
+from nimrod.tests.utils import get_config
 
 TIMEOUT = 10 * 60
 
@@ -26,7 +27,9 @@ class Java:
 
     def _set_home(self):
         if not self.java_home:
-            if 'JAVA_HOME' in os.environ and os.environ['JAVA_HOME']:
+            if 'java_home' in get_config() and get_config()['java_home']:
+                self.java_home = get_config()['java_home']
+            elif 'JAVA_HOME' in os.environ and os.environ['JAVA_HOME']:
                 self.java_home = os.environ['JAVA_HOME']
             else:
                 print('JAVA_HOME undefined.', file=sys.stderr)

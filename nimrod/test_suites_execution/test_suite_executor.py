@@ -2,7 +2,7 @@ import logging
 import re
 import subprocess
 from os import path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from nimrod.test_suite_generation.test_suite import TestSuite
 from nimrod.test_suites_execution.test_case_result import TestCaseResult
 from nimrod.tests.utils import get_base_output_path
@@ -37,9 +37,11 @@ class TestSuiteExecutor:
         for test_class in test_suite.test_classes_names:
             for i in range(0, number_of_executions):
                 logging.debug("Starting execution %d of %s from suite %s", i + 1, test_class, test_suite.path)
-                response = self._execute_junit(test_suite, jar, test_class)
+                response, test_case_mapping = self._execute_junit(test_suite, jar, test_class)
                 for test_case, test_case_result in response.items():
                     test_fqname = f"{test_class}#{test_case}"
+                    if test_case_result == TestCaseResult.FAIL and 'RegressionTest' in test_class:
+                        test_fqname = f"{test_case_mapping[test_case]}#{test_case}"
                     if results.get(test_fqname) and results.get(test_fqname) != test_case_result:
                         results[test_fqname] = TestCaseResult.FLAKY
                     elif not results.get(test_fqname):
@@ -47,7 +49,7 @@ class TestSuiteExecutor:
 
         return results
 
-    def _execute_junit(self, test_suite: TestSuite, target_jar: str, test_class: str, extra_params: List[str] = []) -> Dict[str, TestCaseResult]:
+    def _execute_junit(self, test_suite: TestSuite, target_jar: str, test_class: str, extra_params: List[str] = []) -> Tuple[Dict[str, TestCaseResult], Dict[str, str]]:
         try:
             classpath = generate_classpath([
                 JUNIT,
@@ -67,8 +69,9 @@ class TestSuiteExecutor:
             output = error.output.decode('unicode_escape')
             return self._parse_test_results_from_output(output)
 
-    def _parse_test_results_from_output(self, output: str) -> Dict[str, TestCaseResult]:
+    def _parse_test_results_from_output(self, output: str) -> Tuple[Dict[str, TestCaseResult], Dict[str, str]]:
         results: Dict[str, TestCaseResult] = dict()
+        test_case_mapping: Dict[str, str] = dict()
 
         success_match = re.search(r'OK \((?P<number_of_tests>\d+) tests?\)', output)
         if success_match:
@@ -80,6 +83,8 @@ class TestSuiteExecutor:
             failed_tests = re.findall(r'(?P<test_case_name>test\d+)\([A-Za-z0-9_.]+\)', output)
             for failed_test in failed_tests:
                 results[failed_test] = get_result_for_test_case(failed_test, output)
+            for randoop_test in re.findall(r'(test\d+)\((RegressionTest\d+)\)', output):
+                test_case_mapping[randoop_test[0]] = randoop_test[1]
             tests_run = re.search(r'Tests run: (?P<tests_run_count>\d+),', output)
             test_run_count = 0
             if tests_run:
@@ -90,7 +95,7 @@ class TestSuiteExecutor:
                         if not results.get(test_case_name):
                             results[test_case_name] = TestCaseResult.PASS
  
-        return results
+        return results, test_case_mapping
 
     def execute_test_suite_with_coverage(self, test_suite: TestSuite, target_jar: str, test_cases: List[str]) -> str:
         jars_directory = path.join(get_base_output_path(), "instrumented_jars")
@@ -105,6 +110,8 @@ class TestSuiteExecutor:
             logging.debug(f'Successfully instrumented jar {target_jar}')
 
         logging.debug('Starting execution of test suite for coverage collection')
+        print(test_cases)
+        #self._execute_junit(test_suite, instrumented_jar_path, ' '.join(test_cases))
         self._execute_junit_5(test_suite, instrumented_jar_path, [f"-m={x}" for x in test_cases])
         logging.debug('Finished execution of test suite for coverage collection')
 
