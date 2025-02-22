@@ -11,6 +11,8 @@ class TestSuitesOutput(TypedDict):
     path: str
     detected_semantic_conflicts: bool
     detected_behavior_changes_between_pairs: bool
+    generation_time_seconds: float
+    execution_time_seconds: float
 
 
 class TestSuitesOutputGenerator(OutputGenerator[List[TestSuitesOutput]]):
@@ -26,7 +28,9 @@ class TestSuitesOutputGenerator(OutputGenerator[List[TestSuitesOutput]]):
                 "generator_name": test_suite.generator_name,
                 "path": test_suite.path,
                 "detected_semantic_conflicts": self._has_detected_semantic_conflicts_in_test_suite(test_suite, context.semantic_conflicts),
-                "detected_behavior_changes_between_pairs": self._has_detected_behavior_changes_in_test_suite(test_suite, context.behavior_changes)
+                "detected_behavior_changes_between_pairs": self._has_detected_behavior_changes_in_test_suite(test_suite, context.behavior_changes),
+                "generation_time_seconds": test_suite.generation_time_seconds,
+                "execution_time_seconds": test_suite.execution_time_seconds
             })
 
         return report_data

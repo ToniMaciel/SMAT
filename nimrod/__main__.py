@@ -9,6 +9,7 @@ from nimrod.output_generation.behavior_change_output_generator import BehaviorCh
 from nimrod.output_generation.output_generator import OutputGenerator
 from nimrod.output_generation.semantic_conflicts_output_generator import SemanticConflictsOutputGenerator
 from nimrod.output_generation.test_suites_output_generator import TestSuitesOutputGenerator
+from nimrod.output_generation.test_suites_performance_output_generator import TestSuitesPerformanceOutputGenerator
 from nimrod.smat import SMAT
 from nimrod.test_suite_generation.main import TestSuiteGeneration
 from nimrod.tests.utils import setup_logging, get_config
@@ -46,7 +47,7 @@ def get_test_suite_generators(config: Dict[str, str]) -> List[TestSuiteGenerator
 
 def get_output_generators(config: Dict[str, str]) -> List[OutputGenerator]:
   config_generators = config.get(
-      'output_generators', ['behavior_changes', 'semantic_conflicts', 'test_suites'])
+      'output_generators', ['behavior_changes', 'semantic_conflicts', 'test_suites', 'test_suites_performance'])	
   generators: List[OutputGenerator] = list()
 
   if 'behavior_changes' in config_generators:
@@ -56,6 +57,8 @@ def get_output_generators(config: Dict[str, str]) -> List[OutputGenerator]:
         TestSuitesExecution(TestSuiteExecutor(Java(), Jacoco(Java())))))
   if 'test_suites' in config_generators:
     generators.append(TestSuitesOutputGenerator())
+  if 'test_suites_performance' in config_generators:
+    generators.append(TestSuitesPerformanceOutputGenerator())
 
   return generators
 

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import logging
+import time as time_counter
 from os import makedirs, path
 from time import time
 from typing import List
@@ -26,6 +27,8 @@ class TestSuiteGenerator(ABC):
         self._java = java
 
     def generate_and_compile_test_suite(self, scenario: MergeScenarioUnderAnalysis, input_jar: str, use_determinism: bool) -> TestSuite:
+        start_generation_time = time_counter.perf_counter()
+
         if use_determinism:
             logging.debug('Using deterministic test suite generation')
             
@@ -43,11 +46,14 @@ class TestSuiteGenerator(ABC):
         tests_class_path = self._compile_test_suite(input_jar, test_suite_path)
         logging.info(f"Finished compilation for suite generated with {self.get_generator_tool_name()}")
 
+        end_generation_time = time_counter.perf_counter()
+
         return TestSuite(
             generator_name=self.get_generator_tool_name(),
             class_path=tests_class_path,
             path=test_suite_path,
-            test_classes_names=self._get_test_suite_class_names(test_suite_path)
+            test_classes_names=self._get_test_suite_class_names(test_suite_path),
+            generation_time=(end_generation_time - start_generation_time)
         )
 
     @abstractmethod

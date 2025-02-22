@@ -1,4 +1,4 @@
-import logging
+import logging, time
 from typing import Dict, List
 from nimrod.test_suite_generation.test_suite import TestSuite
 from nimrod.core.merge_scenario_under_analysis import ScenarioInformation as ScenarioJars
@@ -14,6 +14,7 @@ class TestSuitesExecution:
         results: List[TestCaseExecutionInMergeScenario] = []
 
         for test_suite in test_suites:
+            start_suite_execution_time = time.perf_counter()
             logging.info("Starting execution of %s test suite in base", test_suite.generator_name)
             results_base = self._test_suite_executor.execute_test_suite(test_suite, scenario_jars.base)
             logging.info("Starting execution of %s test suite in left", test_suite.generator_name)
@@ -22,7 +23,8 @@ class TestSuitesExecution:
             results_right = self._test_suite_executor.execute_test_suite(test_suite, scenario_jars.right)
             logging.info("Starting execution of %s test suite in merge", test_suite.generator_name)
             results_merge = self._test_suite_executor.execute_test_suite(test_suite, scenario_jars.merge)
-
+            end_suite_execution_time = time.perf_counter()
+            test_suite.set_execution_time_seconds(end_suite_execution_time - start_suite_execution_time)
             test_results = self._merge_test_case_results(test_suite, results_base, results_left, results_right, results_merge)
             results += test_results
 

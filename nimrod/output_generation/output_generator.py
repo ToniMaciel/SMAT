@@ -29,7 +29,8 @@ class OutputGenerator(ABC, Generic[T]):
         logging.info(f"Starting data processing of {self._report_name} report")
         data = self._generate_report_data(context)
         logging.info(f"Finished data processing of {self._report_name} report")
-
+        json_list = json.load(open(file_path, 'r')) if path.isfile(file_path) else []
+        json_list.extend(data)
         with open(file_path, "w") as write:
-            json.dump(data, write)
+            json.dump(json_list, write, indent=4)
         logging.info(f"Finished generation of {self._report_name} report")
