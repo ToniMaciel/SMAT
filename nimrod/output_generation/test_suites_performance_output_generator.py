@@ -22,8 +22,8 @@ class TestSuitesPerformanceOutputGenerator(OutputGenerator[List[TestSuitesPerfor
     def _generate_report_data(self, context: OutputGeneratorContext) -> List[TestSuitesPerformanceOutput]:
         report_data: List[TestSuitesPerformanceOutput] = list()
 
-        total_generation_time = 0
-        total_execution_time = 0
+        total_generation_time = 0.0
+        total_execution_time = 0.0
 
         for test_suite in context.test_suites:
             total_generation_time += test_suite.generation_time_seconds
@@ -45,8 +45,8 @@ class TestSuitesPerformanceOutputGenerator(OutputGenerator[List[TestSuitesPerfor
       minutes, seconds = divmod(remainder, 60)
       
       if hours > 0:
-          return f"{int(hours)}h {int(minutes)}m {int(seconds)}s"
+          return f"{int(hours)}h {int(minutes)}m {seconds:.2f}s"
       elif minutes > 0:
-          return f"{int(minutes)}m {int(seconds)}s"
+          return f"{int(minutes)}m {seconds:.2f}s"
       else:
           return f"{seconds:.2f}s"
