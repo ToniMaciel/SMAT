@@ -43,7 +43,7 @@ class EvosuiteTestSuiteGenerator(TestSuiteGenerator):
           self._java.exec_java(output_path, self._java.get_env(), 3000, *tuple(params))
 
     def _get_test_suite_class_paths(self, path: str) -> List[str]:
-        paths = []
+        paths: List[str] = []
 
         for node in os.listdir(path):
             if os.path.isdir(os.path.join(path, node)):

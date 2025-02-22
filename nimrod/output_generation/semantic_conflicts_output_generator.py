@@ -80,7 +80,7 @@ class SemanticConflictsOutputGenerator(OutputGenerator[List[SemanticConflictsOut
         # We itereate in each method row
         for method_row in method_report_rows:
             if method_row.get_text().find(method_name) != -1:
-                if method_row.select_one('td:nth-last-child(2)').get_text() == '0':
+                if method_row.select_one('td:nth-last-child(2)').get_text() == '0': # type: ignore
                     return True
 
         return False
