@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, TypedDict, Dict, Union
 from nimrod.dynamic_analysis.behavior_change import BehaviorChange
 from nimrod.dynamic_analysis.semantic_conflict import SemanticConflict
 from nimrod.output_generation.output_generator import OutputGenerator, OutputGeneratorContext
@@ -7,6 +7,7 @@ from nimrod.test_suite_generation.test_suite import TestSuite
 
 class TestSuitesOutput(TypedDict):
     project_name: str
+    targets: Dict[str, Union[List[Dict[str, str]], List[str]]]
     generator_name: str
     path: str
     detected_semantic_conflicts: bool
@@ -25,6 +26,7 @@ class TestSuitesOutputGenerator(OutputGenerator[List[TestSuitesOutput]]):
         for test_suite in context.test_suites:
             report_data.append({
                 "project_name": context.scenario.project_name,
+                "targets": context.scenario.targets,
                 "generator_name": test_suite.generator_name,
                 "path": test_suite.path,
                 "detected_semantic_conflicts": self._has_detected_semantic_conflicts_in_test_suite(test_suite, context.semantic_conflicts),

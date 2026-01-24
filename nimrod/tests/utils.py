@@ -2,18 +2,14 @@ import logging
 import os
 import json
 import shutil
-from typing import Dict
+from typing import Dict, Any
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
 
-def get_config() -> "Dict[str, str]":
-    config: "Dict[str, str]" = dict()
-
-    with open(os.path.join(PATH, os.sep.join(['env-config.json'])), 'r') as j:
-        config = json.loads(j.read())
-
-    return config
+def get_config() -> Dict[str, Any]:
+    with open(os.path.join(PATH, "env-config.json"), 'r') as j:
+        return json.load(j)
 
 
 def calculator_project_dir():
@@ -76,14 +72,30 @@ def calculator_sum_aor_1():
 
 def setup_logging():
     config = get_config()
-    config_level = config.get('logger_level')
-    level = logging._nameToLevel[config_level] if config_level else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+    config_level = config.get('logger_level', 'INFO').upper()
+    level = logging._nameToLevel.get(config_level, logging.INFO)
+
+    logger = logging.getLogger()
+    logger.setLevel(level)
+
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
+    formatter = logging.Formatter(
+        '[%(asctime)s] %(levelname)s %(filename)s:%(lineno)d: %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
+    file_handler = logging.FileHandler('logfile.log', mode='a')
+    file_handler.setFormatter(formatter)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
 
 def get_base_output_path() -> str:
-    return os.getcwd().replace("/nimrod/proj", "/")+'/output-test-dest/' if os.getcwd().__contains__("/nimrod/proj") else os.getcwd() + "/output-test-dest/"
+    current_dir = os.getcwd()
+    base_dir = current_dir.replace("/nimrod/proj", "") if "/nimrod/proj" in current_dir else current_dir
+    return os.path.join(base_dir, "output-test-dest", "projects")
